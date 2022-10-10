@@ -1,0 +1,4 @@
+/opt/CLion-2021.3.4/clion-2021.3.4/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/opt/CLion-2021.3.4/clion-2021.3.4/bin/ninja/linux/ninja -G Ninja /home/lyq/CLionProjects/AVLTree
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/lyq/CLionProjects/AVLTree/cmake-build-debug

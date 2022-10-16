@@ -40,16 +40,16 @@ private:
     }
 
 
-    void getNode(node *n){
+    void show(node *n){
         if (n== nullptr)
             return;
-        cout<<n->data<<endl;
-        getNode(n->left);
-        getNode(n->right);
+        cout<<"data: "<<n->data<<"  平衡因子:"<<n->bf<<endl;
+        show(n->left);
+        show(n->right);
     }
 
 
-    void updateBF(node *n){
+    void addBF(node *n){
         if (n->parent== nullptr){
             return;
         }
@@ -60,26 +60,42 @@ private:
             (parent->bf)++;
         }
         if ((parent->bf)==1||(parent->bf)==-1){
-            updateBF(parent);
+            addBF(parent);
         } else if ((parent->bf)==2||(parent->bf)==-2){
             check(parent);
         }
     }
 
-    void check(node *p) {
-        if (p->bf==-2&&p->left->bf==-1){
-            RR(p);
-        } else if (p->bf==2&&p->right->bf==1){
-            LL(p);
-        } else if (p->bf==-2&&p->left->bf==1){
-            LR(p);
-        } else if (p->bf==2&&p->right->bf==-1){
-            RL(p);
+    void delBF(node *n){
+        if (n->parent== nullptr){
+            return;
+        }
+        node *parent=n->parent;
+        if (parent->left==n){
+            (parent->bf)++;
+        } else{
+            (parent->bf)--;
+        }
+        if ((parent->bf)==2||(parent->bf)==-2){
+            check(parent);
+        }
+        delBF(parent);
+    }
+
+    node *check(node *p) {
+        if (p->left!= nullptr&&p->bf==-2&&p->left->bf==-1){
+            return RR(p);
+        } else if (p->right!= nullptr&&p->bf==2&&p->right->bf==1){
+            return LL(p);
+        } else if (p->left!= nullptr&&p->bf==-2&&p->left->bf==1){
+            return LR(p);
+        } else if (p->right!= nullptr&&p->bf==2&&p->right->bf==-1){
+            return RL(p);
         }
     }
 
     //左旋
-    void LL(node *p){
+    node *LL(node *p){
         node *right=p->right;
 
         //   让 right 的左子树 成为 p 的右子树
@@ -90,7 +106,7 @@ private:
 
         // 让 p 成为 right 的左子树
         if (p==root){
-            root==right;
+            root=right;
             right->parent= nullptr;
         } else{
             if (p->parent->left==p){
@@ -106,10 +122,11 @@ private:
 
         p->bf=0;
         right->bf=0;
+        return right;
     }
 
     //右旋
-    void RR(node *p){
+    node *RR(node *p){
         node *left=p->left;
 
         //  让 left 的右子树 成为 p 的左子树
@@ -136,11 +153,13 @@ private:
 
         p->bf=0;
         left->bf=0;
+
+        return left;
     }
 
 
     //左旋后右旋
-    void LR(node *p){
+    node *LR(node *p){
         node *left=p->left;
         node *leftR=left->right;
         int bf=leftR->bf;
@@ -159,10 +178,11 @@ private:
             left->bf=0;
             leftR->bf=0;
         }
+        return leftR;
     }
 
     //右旋后左旋
-    void RL(node *p){
+    node * RL(node *p){
         node *right=p->right;
         node *rightL=right->left;
         int bf=rightL->bf;
@@ -181,6 +201,7 @@ private:
             right->bf=0;
             rightL->bf=0;
         }
+        return rightL;
     }
 
     int Height(node *p){
@@ -210,7 +231,7 @@ private:
 
         if (rightHeight - leftHeight != root->bf) // 检查当前树的平衡因子是否计算正确
         {
-            cout << "平衡因子异常:" << root->data << endl;
+            cout << "平衡因子异常:" << root->data << "  " << root->bf << endl;
         }
 
         // 左子树高度等于-1、右子树高度等于-1、左右子树高度差的绝对值大于1，说明当前树不平衡
@@ -222,6 +243,9 @@ private:
     }
 
 
+
+
+
 public:
 
     AvlTree():root(nullptr){}
@@ -231,6 +255,7 @@ public:
     }
 
 
+    //插入节点
     bool insert(const K& data){
         if(root== nullptr)
         {
@@ -253,9 +278,9 @@ public:
                         (head->bf)--;
                         if (head->bf==1||head->bf==-1)
                         {
-                            updateBF(head);
+                            addBF(head);
                         }
-                        break;
+                        return true;
                     }
                 } else{
                     if (head->right!= nullptr)
@@ -267,30 +292,135 @@ public:
                         (head->bf)++;
                         if (head->bf==1||head->bf==-1)
                         {
-                            updateBF(head);
+                            addBF(head);
                         }
-                        break;
+                        return true;
                     }
                 }
             }
         }
+        return false;
     }
 
+    //遍历
     void showTree(){
-        getNode(root);
+        show(root);
     }
 
+    node *getNode(int data){
+        node *p=root;
+        while (p!= nullptr){
+            if (p->data==data){
+                return p;
+            } else if (p->data<data){
+                p=p->right;
+            } else{
+                p=p->left;
+            }
+        }
+        return nullptr;
+    }
+
+
+    //获取高度
     int getHeight(){
         return Height(root);
     }
 
-
+    //是否平衡
     bool IsBalance()
     {
         return IsBalance2(root) != -1;
     }
 
 
+    bool deleteNode(int data){
+        node *p=root;
+        while (p!= nullptr){
+            if (p->data==data){
+                //删除叶子结点。操作：直接删除，然后依次向上调整为AVL树。
+                if (p->left== nullptr&&p->right== nullptr){
+                    node *parent=p->parent;
+
+                    if (parent->left==p){
+                        parent->left= nullptr;
+                        (parent->bf)++;
+                        if (parent->bf==2){
+                            parent=check(parent);
+                        }
+                        delBF(parent);
+                    } else{
+                        parent->right= nullptr;
+                        (parent->bf)--;
+                        if (parent->bf==-2){
+                            parent=check(parent);
+                        }
+                        delBF(parent);
+                    }
+
+                    delete p;
+                    return true;
+
+                } else if (p->left!= nullptr&&p->right== nullptr){
+                    //删除非叶子节点，该节点只有左孩子。操作：该节点的值替换为左孩子节点的值，然后删除左孩子节点
+                    node *left=p->left;
+                    p->data=left->data;
+                    p->left= nullptr;
+                    (p->bf)++;
+                    delete left;
+                    delBF(p);
+                    return true;
+                } else if (p->left== nullptr&&p->right!= nullptr){
+                    //删除非叶子节点，该节点只有右孩子。操作：该节点的值替换为右孩子节点的值，然后删除右孩子节点
+                    node *right=p->right;
+                    p->data=right->data;
+                    p->right= nullptr;
+                    (p->bf)--;
+                    delete right;
+                    delBF(p);
+                    return true;
+                } else{
+                    //删除非叶子节点，该节点既有左孩子，又有右孩子。操作：该节点的值替换为该节点的前驱节点（或者后继节点）然后删除前驱节点（或者后继节点）
+                    node *s=p->left;
+                    while (s->right!= nullptr){
+                        s=s->right;
+                    }
+                    p->data=s->data;
+                    if (s->left!= nullptr){
+                        node *sLeft=s->left;
+                        s->data=sLeft->data;
+                        s->left= nullptr;
+                        (s->bf)++;
+                        delBF(s);
+                        delete sLeft;
+                    } else{
+                        p->data=s->data;
+                        node *parent=s->parent;
+                        if (parent->left==s){
+                            parent->left= nullptr;
+                            (parent->bf)++;
+                            if (parent->bf==2){
+                                parent=check(parent);
+                                delBF(parent);
+                            }
+                        } else{
+                            parent->right= nullptr;
+                            (parent->bf)--;
+                            if (parent->bf==-2){
+                                parent=check(parent);
+                                delBF(parent);
+                            }
+                        }
+                        delete s;
+                    }
+                }
+            } else if (p->data<data){
+                p=p->right;
+            } else{
+                p=p->left;
+            }
+        }
+    }
 
 };
 
@@ -298,16 +428,17 @@ public:
 int main() {
     AvlTree<int> s;
     s.insert(6);
-    s.insert(3);
+    s.insert(4);
     s.insert(8);
     s.insert(2);
     s.insert(5);
     s.insert(1);
     s.insert(7);
-    s.insert(9);
-    s.showTree();
+    s.insert(0);
+
+    s.deleteNode(4);
     cout<<"---------------------"<<endl;
-    cout<<s.getHeight()<<endl;
+    s.showTree();
     cout<<"---------------------"<<endl;
     cout<<s.IsBalance()<<endl;
 }

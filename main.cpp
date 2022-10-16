@@ -267,7 +267,10 @@ public:
             node *s=new node(data);
             while (head!= nullptr)
             {
-                if (s->data<head->data)
+                if (s->data==head->data){
+                    return false;
+                }
+                else if (s->data<head->data)
                 {
                     if (head->left!= nullptr)
                     {

@@ -396,7 +396,7 @@ public:
                         (s->bf)++;
                         delBF(s);
                         delete sLeft;
-                    } else{
+                        } else{
                         p->data=s->data;
                         node *parent=s->parent;
                         if (parent->left==s){
